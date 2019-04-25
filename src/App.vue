@@ -24,7 +24,9 @@
             <ActivityCreate @createActivity="addActivity"/>
           </div>
           <div class="column is-9">
-            <div class="box content">
+            <div class="box content" 
+            :class="{fetching: isFetching, 'has-error': error 
+            }">
               <ActivityItem v-for="activity in activities"
                              :activity="activity"
                              :key="activity.id"></ActivityItem>
@@ -54,7 +56,8 @@ export default {
           message: 'Hello Vue!',
           titleMessage: 'Title Message Vue!!!!!',
           isTextDisplayed: true,
-          items: {1: {name: 'Filip'}, 2: {name: 'John'}},
+          isFetching: false,
+          error: null,
           user: {},
           activities: {},
         }
@@ -82,7 +85,16 @@ export default {
           }
         },
         created () {
-          this.activities = fetchActivities();
+          this.isFetching = true;
+          fetchActivities()
+          .then(activity => {
+            this.activities = activity;
+            this.isFetching = false;
+          })
+          .catch(error => {
+            this.error = error;
+            this.isFetching = false;
+          })
           this.user = fetchUser();
         }
 }
@@ -95,6 +107,14 @@ html,body {
 }
 footer {
   background-color: #F2F6FA !important;
+}
+
+.fetching {
+  border:2px dashed goldenrod;
+}
+
+.has-error {
+  border:2px solid rebeccapurple;
 }
 
 .activity-length {

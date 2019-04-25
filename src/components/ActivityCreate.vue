@@ -64,7 +64,8 @@ export default {
                 this.$emit('createActivity',{...activity});
                 this.newActivity.title = '';
                 this.newActivity.category = '';
-                this.newActivity.notes = ''
+                this.newActivity.notes = '';
+                this.isFormDisplayed = false;
             });
         },
         toggleFormDisplay () {
@@ -73,7 +74,7 @@ export default {
     },
     computed: {
         isFormValid () {
-            return this.newActivity.title && this.newActivity.notes;
+            return this.newActivity.title && this.newActivity.notes && this.newActivity.category;
           }
     },
     created () {
