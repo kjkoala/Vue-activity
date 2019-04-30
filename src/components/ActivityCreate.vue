@@ -1,4 +1,4 @@
-<template lang="">
+<template>
    <div>
         <a v-if="!isFormDisplayed" @click="toggleFormDisplay" class="button is-primary is-block is-alt is-large" href="#">New Activity</a>
             <div v-if="isFormDisplayed" class="create-form">
@@ -15,7 +15,7 @@
                   <div class="control">
                    <select class="select" v-model="newActivity.category">
                      <option disabled value="">Please select one</option>
-                     <option v-for="(category, index) in categories" :key="index">{{category.text}}</option>
+                     <option v-for="(category, index) in categories" :key="index" :value="category.id">{{category.text}}</option>
                    </select>
                   </div>
                 </div>
@@ -78,7 +78,11 @@ export default {
           }
     },
     created () {
-        this.categories = fetchCategories();
+      fetchCategories()
+      .then(category => {
+        this.categories = category;
+      })
+        
     }
 }
 </script>

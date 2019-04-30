@@ -1,23 +1,6 @@
-<template lang="">
+<template>
   <div id="vueGoalApp">
-      <nav class="navbar is-white topNav">
-        <div class="container">
-          <div class="navbar-brand">
-            <h1>Activity Planner</h1>
-          </div>
-        </div>
-      </nav>
-      <nav class="navbar is-white">
-        <div class="container">
-          <div class="navbar-menu">
-            <div class="navbar-start">
-              <a class="navbar-item is-active" href="#">Newest</a>
-              <a class="navbar-item" href="#">In Progress</a>
-              <a class="navbar-item" href="#">Finished</a>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <navbar-component/>
       <section class="container">
         <div class="columns">
           <div class="column is-3">
@@ -27,11 +10,19 @@
             <div class="box content" 
             :class="{fetching: isFetching, 'has-error': error 
             }">
-              <ActivityItem v-for="activity in activities"
-                             :activity="activity"
-                             :key="activity.id"></ActivityItem>
+            <div v-if="isFetching">Loading...</div>
+            <div v-if="error">{{ error }}</div> 
+              <div v-if="activities && categories">
+                <ActivityItem v-for="activity in activities"
+                :category="categories"
+                :activity="activity"
+                :key="activity.id">
+              </ActivityItem>
+              </div>
+            <div v-if="!isFetching">
               <div class="activity-length">Currently {{ activityLength }} activities</div>
               <div class="activity-motivation">{{ activityMotivation }}</div> 
+            </div>
             </div>
           </div>
         </div>
@@ -40,26 +31,28 @@
 </template>
 
 <script>
-import ActivityItem from './components/ActivityItem';
-import { fetchActivities, fetchUser } from './api';
-import ActivityCreate from './components/ActivityCreate';
 import Vue from 'vue';
+
+import ActivityItem from './components/ActivityItem';
+import { fetchActivities, fetchUser, fetchCategories } from './api';
+import ActivityCreate from './components/ActivityCreate';
+import navbarComponent from './components/TheNavbar.vue';
 
 export default {
   name: 'app',
   components: {
     ActivityItem,
-    ActivityCreate
+    ActivityCreate,
+    navbarComponent
   },
   data () {
     return {
-          message: 'Hello Vue!',
-          titleMessage: 'Title Message Vue!!!!!',
           isTextDisplayed: true,
           isFetching: false,
           error: null,
           user: {},
-          activities: {},
+          activities: null,
+          categories: null
         }
   },
   methods: {
@@ -96,6 +89,10 @@ export default {
             this.isFetching = false;
           })
           this.user = fetchUser();
+          fetchCategories()
+          .then(category => {
+            this.categories = category;
+          });
         }
 }
 </script>
