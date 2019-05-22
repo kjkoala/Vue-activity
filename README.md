@@ -1,4 +1,4 @@
-# firstproject
+# activity
 
 ## Project setup
 ```

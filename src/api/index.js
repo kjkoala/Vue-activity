@@ -25,8 +25,10 @@ export function createActivity (activity) {
   activity.createdAt = new Date();
   activity.updatedAt = new Date();
 
-  return new Promise(resolve => {
-    resolve(activity);
-  })
-  
+  return new FakeApi.post('activities',activity);
+}
+
+
+export const deleteActivityAPI = activity => {
+  return FakeApi.delete('activities', activity)
 }

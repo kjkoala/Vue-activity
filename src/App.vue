@@ -1,10 +1,12 @@
 <template>
   <div id="vueGoalApp">
-      <navbar-component/>
+      <navbar-component
+      @filterSelected="setFilter"
+      />
       <section class="container">
         <div class="columns">
           <div class="column is-3">
-            <ActivityCreate @createActivity="addActivity"/>
+            <ActivityCreate/>
           </div>
           <div class="column is-9">
             <div class="box content" 
@@ -12,8 +14,8 @@
             }">
             <div v-if="isFetching">Loading...</div>
             <div v-if="error">{{ error }}</div> 
-              <div v-if="activities && categories">
-                <ActivityItem v-for="activity in activities"
+              <div v-if="loadedContent">
+                <ActivityItem v-for="activity in filteredActivity"
                 :category="categories"
                 :activity="activity"
                 :key="activity.id">
@@ -31,41 +33,65 @@
 </template>
 
 <script>
-import Vue from 'vue';
-
 import ActivityItem from './components/ActivityItem';
-import { fetchActivities, fetchUser, fetchCategories } from './api';
 import ActivityCreate from './components/ActivityCreate';
 import navbarComponent from './components/TheNavbar.vue';
+import store from './store';
 
 export default {
   name: 'app',
   components: {
     ActivityItem,
     ActivityCreate,
-    navbarComponent
+    navbarComponent,
   },
   data () {
+    const { state: {activities, categories} } = store;
     return {
           isTextDisplayed: true,
           isFetching: false,
           error: null,
-          user: {},
-          activities: null,
-          categories: null
+          activities,
+          categories,
+          filtered: 'all'
         }
   },
   methods: {
-          toggleTextDisplay () {
-            this.isTextDisplayed = !this.isTextDisplayed
-          },
-          addActivity (newActivity) {
-            Vue.set(this.activities, newActivity.id,  newActivity);
+          setFilter (filterOption) {
+            this.filtered = filterOption;
           }
         },
-        computed: {
+        computed: { 
+          filteredActivity () {
+            let filterActivity = {};
+            let condition;
+            if(this.filtered === 'all' ) {
+              return this.activities
+            }
+            
+            if (this.filtered === 'progress') {
+             condition = value => value.progress > 0 && value.progress < 100;
+            }
+            else if (this.filtered === 'finished') {
+             condition = value => value.progress == 100;
+            }
+            else if (this.filtered === 'notstarted') {
+               condition = value => value.progress == 0;
+            }
+
+             filterActivity = Object.values(this.activities)
+            .filter(condition);
+
+            return filterActivity;
+          },
           activityLength () {
             return Object.keys(this.activities).length;
+          },
+          categoryLength () {
+            return Object.keys(this.categories).length;
+          },
+          loadedContent () {
+            return this.categoryLength && this.activityLength;
           },
           activityMotivation () {
             if (this.activityLength && this.activityLength < 5){
@@ -78,20 +104,21 @@ export default {
           }
         },
         created () {
+          // FakeApi.fillDB();
           this.isFetching = true;
-          fetchActivities()
-          .then(activity => {
-            this.activities = activity;
+          store.fetchActivities()
+          .then(() => {
             this.isFetching = false;
           })
           .catch(error => {
             this.error = error;
             this.isFetching = false;
-          })
-          this.user = fetchUser();
-          fetchCategories()
-          .then(category => {
-            this.categories = category;
+          });
+          store.fetchCategories()
+          .then(() => {})
+          .catch(error => {
+            this.error = error;
+            this.isFetching = false;
           });
         }
 }

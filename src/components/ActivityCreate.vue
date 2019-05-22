@@ -7,7 +7,7 @@
                 <div class="field">
                   <label class="label">Title</label>
                   <div class="control">
-                    <input v-model="newActivity.title" class="input" type="text" placeholder="Read a Book">
+                    <input v-model="newActivity.title" class="input" type="text" placeholder="Title new Activity">
                   </div>
                 </div>
                 <div class="field">
@@ -44,12 +44,13 @@
 </template>
 
 <script>
-import { fetchCategories, createActivity } from '@/api';
+import store from '@/store';
 export default {
     data () {
+      const {state: {categories} } = store;
         return {
           isFormDisplayed: false,
-          categories: {},
+          categories,
            newActivity: {
             title: '',
             category: '',
@@ -59,13 +60,14 @@ export default {
     },
     methods: {
         createActivity () {
-            createActivity(this.newActivity)
-            .then(activity => {
-                this.$emit('createActivity',{...activity});
+            store.createActivity({...this.newActivity})
+            .then(createActivity => {
                 this.newActivity.title = '';
                 this.newActivity.category = '';
                 this.newActivity.notes = '';
                 this.isFormDisplayed = false;
+
+                return createActivity;
             });
         },
         toggleFormDisplay () {
@@ -76,13 +78,6 @@ export default {
         isFormValid () {
             return this.newActivity.title && this.newActivity.notes && this.newActivity.category;
           }
-    },
-    created () {
-      fetchCategories()
-      .then(category => {
-        this.categories = category;
-      })
-        
     }
 }
 </script>
